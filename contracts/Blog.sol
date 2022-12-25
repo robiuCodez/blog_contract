@@ -11,9 +11,6 @@ contract Blog {
     // total posts counter
     uint256 public postCounter;
 
-    // track counts of deleted posts
-    uint256 public deletedPostsCounter;
-
     // deleted posts by author
     mapping(uint256 => address) deletedPostOf;
     // get the author of a post(s)
@@ -147,13 +144,13 @@ contract Blog {
     function deletePostById(uint256 _postId)
         public
         itExists(_postId)
-        isAuthor(_postId) returns (bool)
+        isAuthor(_postId)
+        returns (bool)
     {
         // we don't want to delete cause we would like to be able to restore at a later point.
         // delete activePosts[_postId - 1];
 
         activePosts[_postId - 1].deleted = Deactivated.YES;
-        deletedPostsCounter++;
 
         emit Action(_postId, "POST DELETED", msg.sender, block.timestamp);
 
@@ -163,7 +160,6 @@ contract Blog {
     // Restore deleted Blog Posts.
     function restoreDeletedPost(uint256 _postId) public returns (bool) {
         activePosts[_postId - 1].deleted = Deactivated.NO;
-        deletedPostsCounter--;
 
         emit Action(_postId, "POST RESTORED", msg.sender, block.timestamp);
 
@@ -179,7 +175,7 @@ contract Blog {
     function getActivePosts() public view returns (Post[] memory posts) {
         // create a static sized array with the capacity to
         // accomodate all posts...
-        posts = new Post[](postCounter - deletedPostsCounter);
+        posts = new Post[](postCounter);
 
         // loop 2ru all active posts
         for (uint256 i = 0; i < activePosts.length; i++) {
